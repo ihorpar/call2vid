@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { generateScenesFromTranscript, transcribeAudio } from '../lib/gemini';
 import { parseRetellTranscript } from '../lib/utils';
 import { Scene } from '../types';
-import { Loader2, Wand2, Upload, Paperclip, Mic } from 'lucide-react';
+import { Loader2, Wand2, Upload, Paperclip, Mic, FileJson } from 'lucide-react';
 
 interface Props {
   onScenesGenerated: (scenes: Scene[]) => void;
@@ -85,60 +85,73 @@ export const TranscriptInput: React.FC<Props> = ({ onScenesGenerated, onAudioUpl
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-8 border border-editorial-border">
-      <div className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-serif italic text-editorial-paper mb-2">Create Video from Transcript</h2>
-          <p className="text-[11px] uppercase tracking-[1px] text-editorial-muted">Paste your call center transcript, paste RetellAI JSON, or upload audio.</p>
-        </div>
-        <div className="flex gap-2">
+    <div className="w-full max-w-4xl mx-auto bg-[var(--color-surface-900)] border border-[var(--color-surface-800)] rounded-2xl shadow-xl overflow-hidden">
+      <div className="p-8 border-b border-[var(--color-surface-800)] bg-[var(--color-surface-950)]/50">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <input 
-              type="file" 
-              id="audio-attach" 
-              accept="audio/wav,audio/mpeg,audio/mp3,audio/m4a" 
-              className="hidden" 
-              onChange={handleAudioAttach} 
-            />
-            <label 
-              htmlFor="audio-attach" 
-              className={`cursor-pointer px-4 py-2 border border-editorial-border text-[10px] uppercase tracking-[1px] hover:bg-editorial-paper hover:text-editorial-bg transition-colors flex items-center gap-2 ${audioAttached ? 'bg-editorial-paper text-editorial-bg' : ''}`}
-            >
-              <Paperclip className="w-3 h-3" />
-              {audioAttached ? 'Audio Attached' : 'Attach Audio'}
-            </label>
+            <h2 className="text-2xl font-bold text-white tracking-tight mb-2 flex items-center gap-2">
+              <FileJson className="w-6 h-6 text-[var(--color-accent-primary)]" />
+              Import Transcript
+            </h2>
+            <p className="text-[var(--color-surface-400)] text-sm">Paste your RetellAI JSON transcript or upload an audio file to begin.</p>
           </div>
-          <div>
-            <input 
-              type="file" 
-              id="audio-transcribe" 
-              accept="audio/wav,audio/mpeg,audio/mp3,audio/m4a" 
-              className="hidden" 
-              onChange={handleAudioTranscribe} 
-              disabled={isTranscribing || isLoading}
-            />
-            <label 
-              htmlFor="audio-transcribe" 
-              className={`cursor-pointer px-4 py-2 border border-editorial-border text-[10px] uppercase tracking-[1px] hover:bg-editorial-paper hover:text-editorial-bg transition-colors flex items-center gap-2 ${(isTranscribing || isLoading) ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              {isTranscribing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mic className="w-3 h-3" />}
-              {isTranscribing ? 'Transcribing...' : 'Auto-Transcribe'}
-            </label>
+          <div className="flex gap-3">
+            <div>
+              <input 
+                type="file" 
+                id="audio-attach" 
+                accept="audio/wav,audio/mpeg,audio/mp3,audio/m4a" 
+                className="hidden" 
+                onChange={handleAudioAttach} 
+              />
+              <label 
+                htmlFor="audio-attach" 
+                className={`cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center gap-2 ${audioAttached ? 'bg-[var(--color-accent-primary)] border-[var(--color-accent-primary)] text-white shadow-lg shadow-[var(--color-accent-primary)]/20' : 'bg-[var(--color-surface-900)] border-[var(--color-surface-700)] text-[var(--color-surface-300)] hover:text-white hover:border-[var(--color-surface-600)]'}`}
+              >
+                <Paperclip className="w-4 h-4" />
+                {audioAttached ? 'Audio Attached' : 'Attach Audio'}
+              </label>
+            </div>
+            <div>
+              <input 
+                type="file" 
+                id="audio-transcribe" 
+                accept="audio/wav,audio/mpeg,audio/mp3,audio/m4a" 
+                className="hidden" 
+                onChange={handleAudioTranscribe} 
+                disabled={isTranscribing || isLoading}
+              />
+              <label 
+                htmlFor="audio-transcribe" 
+                className={`cursor-pointer px-4 py-2 rounded-lg border border-[var(--color-surface-700)] bg-[var(--color-surface-900)] text-[var(--color-surface-300)] text-sm font-medium hover:text-white hover:border-[var(--color-surface-600)] transition-colors flex items-center gap-2 ${(isTranscribing || isLoading) ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                {isTranscribing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mic className="w-4 h-4" />}
+                {isTranscribing ? 'Transcribing...' : 'Auto-Transcribe'}
+              </label>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <textarea
-          value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
-          placeholder="Paste RetellAI JSON here...&#10;&#10;OR paste raw text:&#10;Agent: Hello, how can I help you today?&#10;User: I need to book an appointment."
-          className="w-full h-64 p-4 bg-transparent border border-editorial-border text-editorial-paper focus:border-editorial-accent outline-none resize-none font-sans text-[13px]"
-          disabled={isTranscribing}
-        />
+      <div className="p-8 space-y-6">
+        <div className="relative group">
+          <textarea
+            value={transcript}
+            onChange={(e) => setTranscript(e.target.value)}
+            placeholder="Paste RetellAI JSON here..."
+            className="w-full h-80 p-6 bg-[var(--color-surface-950)] border border-[var(--color-surface-800)] rounded-xl text-[var(--color-surface-50)] focus:border-[var(--color-accent-primary)] focus:ring-1 focus:ring-[var(--color-accent-primary)] outline-none resize-none font-mono text-sm leading-relaxed transition-all shadow-inner"
+            disabled={isTranscribing}
+          />
+          <div className="absolute top-4 right-4 px-2 py-1 bg-[var(--color-surface-800)] text-[var(--color-surface-400)] text-xs rounded font-mono opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            JSON
+          </div>
+        </div>
 
         {error && (
-          <div className="p-4 border border-red-500/50 text-red-400 text-sm">
+          <div className="p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-sm flex items-start gap-3">
+            <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+              <span className="text-red-400 text-xs font-bold">!</span>
+            </div>
             {error}
           </div>
         )}
@@ -146,16 +159,16 @@ export const TranscriptInput: React.FC<Props> = ({ onScenesGenerated, onAudioUpl
         <button
           onClick={handleGenerate}
           disabled={isLoading || isTranscribing || !transcript.trim()}
-          className="w-full py-3 bg-editorial-paper text-editorial-bg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed font-sans text-[11px] uppercase tracking-[1px] flex items-center justify-center gap-2 transition-colors border border-editorial-paper"
+          className="w-full py-4 bg-[var(--color-accent-primary)] text-white rounded-xl hover:bg-[var(--color-accent-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg flex items-center justify-center gap-3 transition-all shadow-lg shadow-[var(--color-accent-primary)]/20 hover:shadow-xl hover:shadow-[var(--color-accent-primary)]/30 active:scale-[0.99]"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Generating Scenes...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Generating Timeline...
             </>
           ) : (
             <>
-              <Wand2 className="w-4 h-4" />
+              <Wand2 className="w-5 h-5" />
               Generate Video
             </>
           )}

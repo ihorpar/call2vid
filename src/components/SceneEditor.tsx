@@ -1,7 +1,8 @@
 import React from 'react';
 import { Scene, SceneType, Role, Settings } from '../types';
-import { Trash2, Plus, GripVertical, Clock, MessageSquare, Zap } from 'lucide-react';
+import { Trash2, Plus, Clock, GripVertical, AlignLeft, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Props {
   scenes: Scene[];
@@ -45,19 +46,19 @@ export const SceneEditor: React.FC<Props> = ({ scenes, onChange, settings }) => 
   const filteredScenes = scenes.filter(s => filter === 'all' || s.type === filter);
 
   return (
-    <div className="flex flex-col gap-4 p-6 h-full overflow-y-auto border-r border-editorial-border">
-      <div className="flex items-center justify-between mb-2">
-        <div className="font-serif italic text-[18px] text-editorial-paper">Scenes</div>
-        <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-3 border-b border-[var(--color-surface-800)] bg-[var(--color-surface-900)] shrink-0">
+        <div className="font-semibold text-xs text-white">Timeline</div>
+        <div className="flex gap-1 bg-[var(--color-surface-950)] p-0.5 rounded-md border border-[var(--color-surface-800)]">
           {(['all', 'transcript', 'feature'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                "px-2 py-1 text-[9px] uppercase tracking-[1px] font-bold rounded transition-all",
+                "px-2 py-0.5 text-[10px] font-medium rounded transition-all capitalize",
                 filter === f 
-                  ? "bg-editorial-accent text-editorial-bg" 
-                  : "text-editorial-muted hover:text-editorial-paper"
+                  ? "bg-[var(--color-surface-800)] text-white shadow-sm" 
+                  : "text-[var(--color-surface-500)] hover:text-[var(--color-surface-100)]"
               )}
             >
               {f}
@@ -66,122 +67,152 @@ export const SceneEditor: React.FC<Props> = ({ scenes, onChange, settings }) => 
         </div>
       </div>
 
-      {filteredScenes.map((scene) => {
-        const index = scenes.findIndex(s => s.id === scene.id);
-        const isFeature = scene.type === 'feature';
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        <AnimatePresence initial={false}>
+          {filteredScenes.map((scene) => {
+            const index = scenes.findIndex(s => s.id === scene.id);
+            const isFeature = scene.type === 'feature';
 
-        return (
-          <div key={scene.id} className="relative group">
-            <div className={cn(
-              "p-4 transition-all flex gap-4 rounded-xl border-l-[6px] border-y border-r shadow-lg",
-              isFeature 
-                ? "bg-[#2A2A00] border-l-yellow-400 border-y-yellow-500/30 border-r-yellow-500/30" 
-                : "bg-[#1A1A1A] border-l-editorial-accent border-y-editorial-border/50 border-r-editorial-border/50 hover:border-y-editorial-accent/30 hover:border-r-editorial-accent/30"
-            )}>
-              <div className="flex flex-col items-center justify-center gap-2 text-editorial-muted">
-                <button 
-                  onClick={() => moveScene(index, -1)}
-                  disabled={index === 0}
-                  className="hover:text-editorial-accent disabled:opacity-30 disabled:hover:text-editorial-muted transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
-                </button>
-                <button 
-                  onClick={() => moveScene(index, 1)}
-                  disabled={index === scenes.length - 1}
-                  className="hover:text-editorial-accent disabled:opacity-30 disabled:hover:text-editorial-muted transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-              </div>
-              
-              <div className="flex-1 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={scene.type}
-                      onChange={(e) => updateScene(scene.id, { type: e.target.value as SceneType, role: e.target.value === 'feature' ? 'system' : 'agent' })}
-                      className={cn(
-                        "text-[9px] uppercase tracking-[1px] font-bold bg-transparent border-none outline-none cursor-pointer",
-                        isFeature ? "text-yellow-400" : "text-editorial-accent"
-                      )}
+            return (
+              <motion.div 
+                key={scene.id} 
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 30,
+                  mass: 1
+                }}
+                className="relative group"
+              >
+                <div className={cn(
+                  "p-3 transition-all flex gap-2 rounded-lg border shadow-sm",
+                  isFeature 
+                    ? "bg-[var(--color-accent-feature)]/5 border-[var(--color-accent-feature)]/20" 
+                    : "bg-[var(--color-surface-900)] border-[var(--color-surface-800)] hover:border-[var(--color-surface-700)]"
+                )}>
+                  <div className="flex flex-col items-center justify-center gap-1 text-[var(--color-surface-600)]">
+                    <button 
+                      onClick={() => moveScene(index, -1)}
+                      disabled={index === 0}
+                      className="hover:text-[var(--color-accent-primary)] disabled:opacity-20 disabled:hover:text-[var(--color-surface-600)] transition-colors"
                     >
-                      <option value="transcript" className="bg-editorial-bg">Transcript</option>
-                      <option value="feature" className="bg-editorial-bg">Feature Showcase</option>
-                    </select>
-
-                    {scene.type === 'transcript' && (
-                      <select
-                        value={scene.role}
-                        onChange={(e) => updateScene(scene.id, { role: e.target.value as Role })}
-                        className="text-[9px] uppercase tracking-[1px] font-bold text-editorial-muted bg-transparent border-none outline-none cursor-pointer hover:text-editorial-paper"
-                      >
-                        <option value="agent" className="bg-editorial-bg">{settings.agentLabel}</option>
-                        <option value="user" className="bg-editorial-bg">{settings.userLabel}</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-editorial-muted text-[10px] uppercase tracking-[1px]">
-                      <Clock className="w-3 h-3" />
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={(scene.durationInFrames / 30).toFixed(1)}
-                        onChange={(e) => updateScene(scene.id, { durationInFrames: Math.round(parseFloat(e.target.value) * 30) || 30 })}
-                        className="w-12 bg-transparent text-right outline-none text-editorial-paper border-b border-editorial-border focus:border-editorial-accent"
-                      />
-                      <span>sec</span>
-                    </div>
-                    
-                    <button
-                      onClick={() => removeScene(scene.id)}
-                      className="text-editorial-muted hover:text-red-400 transition-colors"
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                    </button>
+                    <button 
+                      onClick={() => moveScene(index, 1)}
+                      disabled={index === scenes.length - 1}
+                      className="hover:text-[var(--color-accent-primary)] disabled:opacity-20 disabled:hover:text-[var(--color-surface-600)] transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                   </div>
+                  
+                  <div className="flex-1 flex flex-col gap-2 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        {isFeature ? (
+                          <Zap className="w-3.5 h-3.5 text-[var(--color-accent-feature)]" />
+                        ) : (
+                          <AlignLeft className="w-3.5 h-3.5 text-[var(--color-accent-transcript)]" />
+                        )}
+                        <select
+                          value={scene.type}
+                          onChange={(e) => updateScene(scene.id, { type: e.target.value as SceneType, role: e.target.value === 'feature' ? 'system' : 'agent' })}
+                          className={cn(
+                            "text-[10px] font-bold bg-transparent border-none outline-none cursor-pointer",
+                            isFeature ? "text-[var(--color-accent-feature)]" : "text-[var(--color-accent-transcript)]"
+                          )}
+                        >
+                          <option value="transcript" className="bg-[var(--color-surface-900)]">Transcript</option>
+                          <option value="feature" className="bg-[var(--color-surface-900)]">Feature</option>
+                        </select>
+
+                        {scene.type === 'transcript' && (
+                          <>
+                            <span className="text-[var(--color-surface-700)] text-[10px]">•</span>
+                            <select
+                              value={scene.role}
+                              onChange={(e) => updateScene(scene.id, { role: e.target.value as Role })}
+                              className="text-[10px] font-semibold text-[var(--color-surface-400)] bg-transparent border-none outline-none cursor-pointer hover:text-white"
+                            >
+                              <option value="agent" className="bg-[var(--color-surface-900)]">{settings.agentLabel}</option>
+                              <option value="user" className="bg-[var(--color-surface-900)]">{settings.userLabel}</option>
+                            </select>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-[var(--color-surface-500)] text-[10px] font-mono bg-[var(--color-surface-950)] px-1.5 py-0.5 rounded border border-[var(--color-surface-800)]">
+                          <Clock className="w-2.5 h-2.5" />
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={(scene.durationInFrames / 30).toFixed(1)}
+                            onChange={(e) => updateScene(scene.id, { durationInFrames: Math.round(parseFloat(e.target.value) * 30) || 30 })}
+                            className="w-8 bg-transparent text-right outline-none text-white"
+                          />
+                          <span className="text-[var(--color-surface-600)]">s</span>
+                        </div>
+                        
+                        <button
+                          onClick={() => removeScene(scene.id)}
+                          className="text-[var(--color-surface-600)] hover:text-red-400 transition-colors"
+                          title="Delete scene"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      value={scene.text}
+                      onChange={(e) => updateScene(scene.id, { text: e.target.value })}
+                      className={cn(
+                        "w-full bg-[var(--color-surface-950)] border p-2 text-xs text-[var(--color-surface-200)] outline-none resize-none leading-relaxed rounded transition-colors",
+                        isFeature 
+                          ? "border-[var(--color-accent-feature)]/20 focus:border-[var(--color-accent-feature)]" 
+                          : "border-[var(--color-surface-800)] focus:border-[var(--color-accent-primary)]"
+                      )}
+                      rows={2}
+                    />
+                  </div>
                 </div>
 
-                <div className="relative">
-                  <textarea
-                    value={scene.text}
-                    onChange={(e) => updateScene(scene.id, { text: e.target.value })}
-                    className={cn(
-                      "w-full bg-black/40 border p-4 text-[14px] text-editorial-paper/90 outline-none resize-none leading-relaxed rounded-lg transition-colors",
-                      isFeature ? "border-yellow-500/30 focus:border-yellow-400" : "border-editorial-border focus:border-editorial-accent"
-                    )}
-                    rows={3}
-                  />
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <button
+                    onClick={() => addScene(index)}
+                    className="bg-[var(--color-surface-800)] text-white p-1 rounded-full shadow-lg hover:bg-[var(--color-surface-700)] transition-all border border-[var(--color-surface-600)]"
+                    title="Add scene below"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
                 </div>
-              </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+        
+        {scenes.length === 0 && (
+          <div className="text-center py-16 text-[var(--color-surface-500)] flex flex-col items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[var(--color-surface-900)] flex items-center justify-center border border-[var(--color-surface-800)]">
+              <AlignLeft className="w-8 h-8 text-[var(--color-surface-600)]" />
             </div>
-
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <button
-                onClick={() => addScene(index)}
-                className="bg-editorial-paper text-editorial-bg p-1.5 shadow-lg hover:bg-white transition-all border border-editorial-paper"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            <p className="text-sm">No scenes yet. Generate from transcript or add one manually.</p>
+            <button
+              onClick={() => addScene(-1)}
+              className="mt-2 flex items-center gap-2 px-4 py-2 bg-[var(--color-accent-primary)] text-white rounded-md hover:bg-[var(--color-accent-primary-hover)] text-sm font-medium transition-colors shadow-lg shadow-[var(--color-accent-primary)]/20"
+            >
+              <Plus className="w-4 h-4" />
+              Add First Scene
+            </button>
           </div>
-        );
-      })}
-      
-      {scenes.length === 0 && (
-        <div className="text-center py-12 text-editorial-muted font-serif italic text-lg">
-          No scenes yet. Generate from transcript or add one manually.
-          <button
-            onClick={() => addScene(-1)}
-            className="mt-4 mx-auto flex items-center gap-2 px-4 py-2 bg-transparent border border-editorial-paper text-editorial-paper hover:bg-editorial-paper hover:text-editorial-bg font-sans text-[11px] uppercase tracking-[1px] transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add First Scene
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

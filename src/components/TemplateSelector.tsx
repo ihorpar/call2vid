@@ -17,17 +17,15 @@ export const TemplateSelector: React.FC<Props> = ({ value, onChange }) => {
   ];
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="text-[10px] uppercase tracking-[1px] text-editorial-muted whitespace-nowrap">
-        Template:
-      </div>
+    <div className="flex items-center gap-2 bg-[var(--color-surface-950)] border border-[var(--color-surface-800)] rounded-md px-3 py-1.5">
+      <LayoutTemplate className="w-4 h-4 text-[var(--color-surface-400)]" />
       <select 
         value={value}
         onChange={(e) => onChange(e.target.value as TemplateType)}
-        className="bg-transparent border-none text-editorial-accent text-[11px] uppercase tracking-[1px] outline-none cursor-pointer font-bold"
+        className="bg-transparent border-none text-sm font-medium text-white outline-none cursor-pointer"
       >
         {templates.map(t => (
-          <option key={t.id} value={t.id} className="bg-editorial-bg text-editorial-paper">{t.name}</option>
+          <option key={t.id} value={t.id} className="bg-[var(--color-surface-900)] text-white">{t.name}</option>
         ))}
       </select>
     </div>

@@ -1,5 +1,6 @@
 export type SceneType = 'transcript' | 'feature';
 export type Role = 'agent' | 'user' | 'system';
+export type Orientation = 'landscape' | 'portrait';
 
 export interface Scene {
   id: string;
@@ -21,6 +22,7 @@ export interface Settings {
 export interface VideoProps {
   scenes: Scene[];
   template: TemplateType;
+  orientation: Orientation;
   audioUrl?: string;
   settings: Settings;
 }
